@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Simple Notes App (Duplicate Badge Only) — Updated Style</title>
+  <style>
+    /* New overall background and font */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-start: #0f172a;
+        --bg-end: #071030;
+        --card-bg: #0b1220;
+        --text: #e6eef8;
+        --muted: #9fb0d6;
+        --btn-bg: #2563eb;
+        --btn-hover: #1e4db8;
+        --danger: #ef4444;
+        --accent: #ffd54f;
+      }
+    }
+    :root {
+      --bg-start: #fdfbfb;
+      --bg-end: #e6f4ff;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #5b708a;
+      --btn-bg: #0b63d6;
+      --btn-hover: #094fb0;
+      --danger: #e44b4b;
+      --accent: #ffecb3;
+    }
+
+    body {
+      font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      color: var(--text);
+      background: linear-gradient(120deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #container {
+      display: flex;
+      gap: 20px;
+      padding: 28px;
+      max-width: 1100px;
+      margin: 24px auto;
+      box-sizing: border-box;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 230px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(6, 30, 70, 0.08);
+      backdrop-filter: blur(6px);
+    }
+    #sidebar h3 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    /* Notes area */
+    #notesArea {
+      flex: 1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(6, 30, 70, 0.06);
+    }
+    #notesArea h3 {
+      margin-top: 0;
+      font-size: 18px;
+      color: var(--text);
+      display: inline-block;
+    }
+
+    /* Note card */
+    .noteCard {
+      background: var(--card-bg);
+      border: 1px solid rgba(15,23,42,0.06);
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(6,30,70,0.04);
+    }
+
+    .noteCard strong { font-size: 15px; color: var(--text); }
+    .noteCard div { color: var(--text); }
+    .noteCard .desc { margin: 6px 0 10px 0; color: var(--muted); white-space: pre-wrap; }
+
+    .meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 12px;
+      margin: 6px 6px 6px 0;
+      background: var(--btn-bg);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+    .btn:hover { transform: translateY(-2px); background: var(--btn-hover); }
+    .btn.gray { background: rgba(0,0,0,0.12); color: var(--text); }
+    .btn.danger { background: var(--danger); }
+    .btn.small { padding: 6px 10px; font-size: 13px; border-radius: 6px; }
+
+    /* Inputs */
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid rgba(15,23,42,0.06);
+      background: rgba(255,255,255,0.95);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+
+    /* Modal */
+    #modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(3,6,23,0.55);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    #modalBox {
+      background: var(--card-bg);
+      padding: 20px;
+      width: 360px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(2,6,23,0.6);
+      color: var(--text);
+    }
+    #modalBox h3 { margin-top:0; margin-bottom:8px; }
+
+    .badge {
+      display:inline-block;
+      padding: 3px 8px;
+      background: var(--accent);
+      border-radius: 999px;
+      font-size: 12px;
+      margin-left: 8px;
+      color: #3b3b3b;
+      vertical-align: middle;
+    }
+
+    /* Responsive */
+    @media (max-width: 820px) {
+      #container { flex-direction: column; padding: 16px; }
+      #sidebar { width: 100%; display: flex; gap: 12px; align-items: center; }
+      #sidebar h3 { display:none; }
+      #notesArea { margin-top: 14px; }
+      #modalBox { width: 92%; }
+    }
+
+    /* small helper */
+    .flexRow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align:center; padding:14px 0; margin:0; color:var(--text);">
+    Simple Notes App <small style="font-size:12px; color:var(--muted); display:block; margin-top:6px;">(Duplicate Title Badge)</small>
+  </h2>
+
+  <div id="container">
+    <div id="sidebar">
+      <h3>Categories</h3>
+      <div class="flexRow" style="margin-bottom:6px;">
+        <button class="btn" onclick="openModal()">+ Add Note</button>
+        <button class="btn gray" onclick="displayNotes(currentCategory)">Refresh</button>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button class="btn" style="width:100%; margin-bottom:8px;" onclick="showCategory('All')">All Notes</button>
+        <button class="btn" style="width:100%; margin-bottom:8px;" onclick="showCategory('Work')">Work</button>
+        <button class="btn" style="width:100%; margin-bottom:8px;" onclick="showCategory('Personal')">Personal</button>
+        <button class="btn" style="width:100%;" onclick="showCategory('Other')">Other</button>
+      </div>
+    </div>
+
+    <div id="notesArea">
+      <h3 id="heading">All Notes</h3>
+      <div id="notesList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" aria-hidden="true">
+    <div id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Add Note</h3>
+
+      <input type="hidden" id="editId">
+
+      <label for="noteTitle">Title</label>
+      <input type="text" id="noteTitle" placeholder="Enter note title">
+
+      <label for="noteDesc">Description</label>
+      <textarea id="noteDesc" placeholder="Enter description"></textarea>
+
+      <label for="noteCat">Category</label>
+      <select id="noteCat">
+        <option>Work</option>
+        <option>Personal</option>
+        <option>Other</option>
+      </select>
+
+      <div style="text-align:right; margin-top:6px;">
+        <button class="btn" onclick="saveNote()">Save</button>
+        <button class="btn gray" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let notes = JSON.parse(localStorage.getItem("notesData")) || [];
+    let currentCategory = "All";
+
+    function saveToLocal() {
+      localStorage.setItem("notesData", JSON.stringify(notes));
+    }
+
+    function getBaseTitle(title) {
+      return title.replace(/\s\(\d+\)$/, "");
+    }
+
+    function openModal() {
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("modalTitle").innerText = "Add Note";
+      document.getElementById("editId").value = "";
+      document.getElementById("noteTitle").value = "";
+      document.getElementById("noteDesc").value = "";
+      document.getElementById("noteCat").value = "Work";
+      document.getElementById("noteTitle").focus();
+      document.getElementById("modal").setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      document.getElementById("modal").setAttribute("aria-hidden", "true");
+    }
+
+    function saveNote() {
+      let title = document.getElementById("noteTitle").value.trim();
+      let desc = document.getElementById("noteDesc").value.trim();
+      let cat = document.getElementById("noteCat").value;
+      let editId = document.getElementById("editId").value;
+
+      if (title === "" || desc === "") {
+        alert("Please enter all fields.");
+        return;
+      }
+
+      if (editId) {
+        editId = Number(editId);
+        for (let i = 0; i < notes.length; i++) {
+          if (notes[i].id === editId) {
+            notes[i].title = title;
+            notes[i].desc = desc;
+            notes[i].category = cat;
+            notes[i].date = new Date().toLocaleString();
+            break;
+          }
+        }
+      } else {
+        let newNote = {
+          id: Date.now(),
+          title: title,
+          desc: desc,
+          category: cat,
+          date: new Date().toLocaleString()
+        };
+        notes.push(newNote);
+      }
+
+      saveToLocal();
+      closeModal();
+      displayNotes(currentCategory);
+    }
+
+    function deleteNote(id) {
+      if (confirm("Delete this note?")) {
+        notes = notes.filter(n => n.id !== id);
+        saveToLocal();
+        displayNotes(currentCategory);
+      }
+    }
+
+    function editNote(id) {
+      let note = notes.find(n => n.id === id);
+      if (!note) return;
+      openModal();
+      document.getElementById("modalTitle").innerText = "Edit Note";
+      document.getElementById("editId").value = id;
+      document.getElementById("noteTitle").value = note.title;
+      document.getElementById("noteDesc").value = note.desc;
+      document.getElementById("noteCat").value = note.category;
+    }
+
+    function escapeHtml(text) {
+      let map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function displayNotes(cat) {
+      currentCategory = cat;
+      let list = document.getElementById("notesList");
+      list.innerHTML = "";
+
+      let filtered = (cat === "All") ? notes : notes.filter(n => n.category === cat);
+      document.getElementById("heading").innerText = cat + " Notes";
+
+      // Count duplicates by base title
+      let baseCounts = {};
+      filtered.forEach(n => {
+        let base = getBaseTitle(n.title);
+        baseCounts[base] = (baseCounts[base] || 0) + 1;
+      });
+
+      filtered.forEach(n => {
+        let base = getBaseTitle(n.title);
+        let isDuplicate = baseCounts[base] > 1;
+
+        let card = document.createElement("div");
+        card.className = "noteCard";
+
+        let title = document.createElement("div");
+        title.innerHTML = "<strong>" + escapeHtml(n.title) + "</strong>" +
+          (isDuplicate ? " <span class='badge'>Duplicate Title</span>" : "");
+        card.appendChild(title);
+
+        let desc = document.createElement("div");
+        desc.className = "desc";
+        desc.innerText = n.desc;
+        card.appendChild(desc);
+
+        let meta = document.createElement("div");
+        meta.className = "meta";
+        meta.innerText = "Category: " + n.category + " | Date: " + n.date;
+        card.appendChild(meta);
+
+        let controls = document.createElement("div");
+
+        let btnEdit = document.createElement("button");
+        btnEdit.className = "btn small";
+        btnEdit.innerText = "Edit";
+        btnEdit.onclick = () => editNote(n.id);
+        controls.appendChild(btnEdit);
+
+        let btnDel = document.createElement("button");
+        btnDel.className = "btn small danger";
+        btnDel.style.background = "var(--danger)";
+        btnDel.innerText = "Delete";
+        btnDel.onclick = () => deleteNote(n.id);
+        controls.appendChild(btnDel);
+
+        card.appendChild(controls);
+        list.appendChild(card);
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<p style='color:var(--muted)'>No notes in this category.</p>";
+      }
+    }
+
+    function showCategory(cat) {
+      displayNotes(cat);
+    }
+
+    // initialize
+    displayNotes("All");
+  </script>
+</body>
+</html>
